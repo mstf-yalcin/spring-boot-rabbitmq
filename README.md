@@ -23,7 +23,6 @@ services:
   rabbitmq-server:
     image: rabbitmq:3-management
 
-
 ```
 docker-override.compose.yml
 ```yml
@@ -61,12 +60,11 @@ services:
       - 15672:15672
     restart: always
 
-
 ```
 
 
 
- Will create one RabbitMQ server, one producer,, and two consumer containers in the project.
+ Will create one RabbitMQ server, one producer and two consumer containers in the project.
 ```bash
 docker compose up -d
 ```
