@@ -1,0 +1,14 @@
+
+rabbitmq:
+    exchange: test-direct
+    queue: test-queue
+    routingKey: test-routingKey
+spring:
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    username: ${RABBITMQ_USER}
+    password: ${RABBITMQ_PASS}
+    port: 5672
+
+server:
+  port: 8080

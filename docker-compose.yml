@@ -1,0 +1,16 @@
+version: '3.4'
+
+services:
+  producer:
+    container_name: spring-producer
+    build:
+      context: ./producer
+      dockerfile: Dockerfile
+  consumer:
+    build:
+      context: ./consumer
+      dockerfile: Dockerfile
+    deploy:
+      replicas: 2
+  rabbitmq-server:
+    image: rabbitmq:3-management

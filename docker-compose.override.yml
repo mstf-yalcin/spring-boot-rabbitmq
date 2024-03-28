@@ -1,0 +1,38 @@
+version: '3.4'
+
+services:
+  producer:
+    ports:
+      - 80:8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=compose
+      - RABBITMQ_HOST=rabbitmq-server
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - RABBITMQ_PORT=5672
+    depends_on:
+      - rabbitmq-server
+    restart: always
+  consumer:
+    environment:
+      - SPRING_PROFILES_ACTIVE=compose
+      - RABBITMQ_HOST=rabbitmq-server
+      - RABBITMQ_USER=user
+      - RABBITMQ_PASS=password
+      - RABBITMQ_PORT=5672
+    depends_on:
+      - rabbitmq-server
+      - producer
+    restart: always
+  rabbitmq-server:
+    environment:
+      - RABBITMQ_DEFAULT_USER=user
+      - RABBITMQ_DEFAULT_PASS=password
+    ports:
+      - 5672:5672
+      - 15672:15672
+    restart: always
+
+
+
+
