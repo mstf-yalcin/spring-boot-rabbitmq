@@ -11,24 +11,16 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.logging.Logger;
 
-
 @Service
-public class ManualConsumer {
-
-    @Value("${rabbitmq.exchange}")
-    String exchange;
-
-    @Value("${rabbitmq.queue}")
+public class DirectExchangeManualConsumer {
+    @Value("${rabbitmq.direct.queue}")
     String queueName;
-
-    @Value("${rabbitmq.routingKey}")
-    String routingKey;
 
     private final Channel channel;
 
-    private final Logger logger = Logger.getLogger(ManualConsumer.class.getName());
+    private final Logger logger = Logger.getLogger(DirectExchangeManualConsumer.class.getName());
 
-    public ManualConsumer(Channel channel) throws IOException {
+    public DirectExchangeManualConsumer(Channel channel) throws IOException {
         this.channel = channel;
         channel.basicQos(0, 4, true);
     }
@@ -40,9 +32,10 @@ public class ManualConsumer {
 
             Wait();
 
+
             String message = new String(delivery.getBody(), StandardCharsets.UTF_8);
 
-            System.out.println("Received message: " + message);
+            System.out.println("Received message from 'Direct' exchange: " + message);
 
             channel.basicAck(delivery.getEnvelope().getDeliveryTag(), false);
         };
@@ -50,8 +43,7 @@ public class ManualConsumer {
         channel.basicConsume(queueName, false, deliverCallback, consumerTag -> {
         });
 
-        System.out.println("waiting...");
-
+        System.out.println("waiting direct exchange...");
 
     }
 

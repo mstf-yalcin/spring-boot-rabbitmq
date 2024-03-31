@@ -1,8 +1,19 @@
-
 rabbitmq:
-    exchange: test-direct
-    queue: test-queue
-    routingKey: test-routingKey
+  direct:
+    exchange: test.direct
+    queue: test.direct.queue
+    routingKey: test.routingKey
+  fanout:
+    exchange: test.fanout
+  topic:
+    exchange: test.topic
+    routingKey: '*.routingKey.topic'
+    routingKey2: '#.topic'
+    queue: test.topic.queue
+  header:
+    exchange: test.header
+    queue: test.header.queue
+
 spring:
   rabbitmq:
     host: ${RABBITMQ_HOST}

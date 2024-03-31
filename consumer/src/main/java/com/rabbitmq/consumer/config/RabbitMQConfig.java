@@ -1,12 +1,15 @@
 package com.rabbitmq.consumer.config;
 
 import com.rabbitmq.client.Channel;
-import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.config.SimpleRabbitListenerContainerFactory;
 import org.springframework.amqp.rabbit.connection.CachingConnectionFactory;
 import org.springframework.amqp.rabbit.connection.Connection;
+import org.springframework.amqp.rabbit.connection.ConnectionFactory;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.amqp.rabbit.listener.RabbitListenerContainerFactory;
+import org.springframework.amqp.rabbit.listener.SimpleMessageListenerContainer;
 import org.springframework.amqp.support.converter.Jackson2JsonMessageConverter;
 import org.springframework.amqp.support.converter.MessageConverter;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.retry.backoff.FixedBackOffPolicy;
@@ -16,25 +19,26 @@ import org.springframework.retry.support.RetryTemplate;
 
 @Configuration
 public class RabbitMQConfig {
-    @Value("${rabbitmq.queue}")
-    String queueName;
-
-    @Bean
-    public Queue queue() {
-        return new Queue(queueName, true, false, false);
-    }
-
     @Bean
     public MessageConverter jsonMessageConverter() {
         return new Jackson2JsonMessageConverter();
     }
 
+    @Bean
+    public RabbitListenerContainerFactory<SimpleMessageListenerContainer> directRabbitListenerContainerFactory(ConnectionFactory connectionFactory) {
+        SimpleRabbitListenerContainerFactory factory = new SimpleRabbitListenerContainerFactory();
+        factory.setConnectionFactory(connectionFactory);
+        factory.setConcurrentConsumers(2);
+        factory.setMaxConcurrentConsumers(2);
+        factory.setPrefetchCount(5);
+        factory.setGlobalQos(true);
+        return factory;
+    }
 
     //retry
     @Bean
     public Channel channel(CachingConnectionFactory connectionFactory, RetryTemplate retryTemplate) throws Exception {
-        RetryTemplate template = retryTemplate();
-        Connection connection = template.execute(
+        Connection connection = retryTemplate.execute(
                 retryContext -> connectionFactory.createConnection());
         Channel channel = connection.createChannel(false);
         return channel;
@@ -57,15 +61,15 @@ public class RabbitMQConfig {
     }
 
 
-    //for channel-rabbitTemplate
-    //    @Bean
-//    public CachingConnectionFactory connectionFactory() throws URISyntaxException, NoSuchAlgorithmException, KeyManagementException {
-//        CachingConnectionFactory connectionFactory = new CachingConnectionFactory();
-//        connectionFactory.setUri("amqp://user:password@localhost:5672");
-//        return connectionFactory;
+
+
+
+//    @Bean
+//    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory, RetryTemplate retryTemplate) {
+//        RabbitTemplate rabbitTemplate = new RabbitTemplate(connectionFactory);
+//        rabbitTemplate.setRetryTemplate(retryTemplate);
+//        return rabbitTemplate;
 //    }
-
-
     //only channel
     //    @Bean
 //    public ConnectionFactory connectionFactory() throws URISyntaxException, NoSuchAlgorithmException, KeyManagementException {

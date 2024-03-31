@@ -17,28 +17,59 @@ import org.springframework.retry.support.RetryTemplate;
 @Configuration
 public class RabbitMQConfig {
 
-    @Value("${rabbitmq.exchange}")
-    String exchange;
+    @Value("${rabbitmq.direct.exchange}")
+    String directExchange;
 
-    @Value("${rabbitmq.queue}")
-    String queueName;
+    @Value("${rabbitmq.direct.queue}")
+    String directQueueName;
 
-    @Value("${rabbitmq.routingKey}")
-    String routingKey;
+    @Value("${rabbitmq.direct.routingKey}")
+    String directRoutingKey;
 
-    @Bean
-    public Queue queue() {
-        return new Queue(queueName, true, false, false);
-    }
+    @Value("${rabbitmq.fanout.exchange}")
+    String fanoutExchange;
 
+    @Value("${rabbitmq.topic.exchange}")
+    String topicExchange;
+
+    @Value("${rabbitmq.header.exchange}")
+    String headerExchange;
+
+
+    //Direct Exchange
     @Bean
     public DirectExchange directExchange() {
-        return new DirectExchange(exchange, true, false);
+        return new DirectExchange(directExchange, true, false);
     }
 
     @Bean
-    public Binding binding(Queue queue, DirectExchange directExchange) {
-        return BindingBuilder.bind(queue).to(directExchange).with(routingKey);
+    public Queue directQueue() {
+        return new Queue(directQueueName, true, false, false);
+    }
+
+    @Bean
+    public Binding directBinding(Queue queue, DirectExchange directExchange) {
+        return BindingBuilder.bind(queue).to(directExchange).with(directRoutingKey);
+    }
+
+
+    //FanOut Exchange
+    @Bean
+    public FanoutExchange fanoutExchange() {
+        return new FanoutExchange(fanoutExchange, true, false);
+    }
+
+
+    //Topic Exchange
+    @Bean
+    public TopicExchange topicExchange() {
+        return new TopicExchange(topicExchange, true, false);
+    }
+
+    //Header Exchange
+    @Bean
+    public HeadersExchange headersExchange() {
+        return new HeadersExchange(headerExchange, true, false);
     }
 
     @Bean
@@ -49,12 +80,9 @@ public class RabbitMQConfig {
         return rabbitTemplate;
     }
 
-
-
     @Bean
     public Channel channel(CachingConnectionFactory connectionFactory, RetryTemplate retryTemplate) throws Exception {
-        RetryTemplate template = retryTemplate();
-        Connection connection = template.execute(
+        Connection connection = retryTemplate.execute(
                 retryContext -> connectionFactory.createConnection());
         Channel channel = connection.createChannel(false);
         return channel;
@@ -87,13 +115,6 @@ public class RabbitMQConfig {
 //        Channel channel = connectionFactory.createConnection().createChannel(false);
 //        return channel;
 //    }
-
-    //    @Bean
-//    public TopicExchange topicExchange()
-//    {
-//        return new TopicExchange(exchange,true,false);
-//    }
-
 //    @Bean
 //    public ConnectionFactory factory() throws URISyntaxException {
 //        var uri=new URI(rabbitUri);
@@ -104,6 +125,4 @@ public class RabbitMQConfig {
 //    public RabbitTemplate rabbitTemplate(ConnectionFactory connectionFactory) {
 //        return new RabbitTemplate(connectionFactory);
 //    }
-
-
 }
